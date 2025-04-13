@@ -22,7 +22,6 @@ mccabe==0.7.0
 mypy==1.15.0
 mypy-extensions==1.0.0
 packaging==24.2
-psycopg2==2.9.10
 psycopg2-binary==2.9.10
 pycodestyle==2.13.0
 pyflakes==3.3.2
