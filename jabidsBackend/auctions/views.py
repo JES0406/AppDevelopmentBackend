@@ -1,8 +1,9 @@
 from django.shortcuts import render
-from rest_framework import generics
+from rest_framework import generics, status
 from .models import Auction, Category, Bid
 from .serializers import (
     AuctionSerializer,
+    AuctionDetailSerializer,
     CategorySerializer,
     BidSerializer,
 )
@@ -11,6 +12,9 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import ValidationError
 from django.db.models import OuterRef, Subquery, DecimalField, F
 from django.db.models.functions import Coalesce
+from rest_framework.response import Response
+from .permissions import IsOwnerOrAdmin  # Your custom permission
+
 
 
 class BaseListCreateView(generics.ListCreateAPIView):
@@ -85,16 +89,18 @@ class AuctionListCreateView(BaseListCreateView):
 
 
 class AuctionDetailView(generics.RetrieveUpdateDestroyAPIView):
-    serializer = AuctionSerializer
+    serializer_class = AuctionDetailSerializer
     queryset = Auction.objects.all()
 
 
 class CategoryListView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
 class CategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
@@ -104,13 +110,47 @@ class BidListCreateView(BaseListCreateView):
 
     def get_queryset(self):
         auction_id = self.kwargs['auction_id']
-        return Bid.objects.filter(auction_id=auction_id)
+        return Bid.objects.filter(auction_id=auction_id).order_by('-price')
 
     def perform_create(self, serializer):
         auction_id = self.kwargs['auction_id']
         serializer.save(auction_id=auction_id, bidder_name=self.request.user.username)
 
 
+
 class BidDetailView(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = BidSerializer
     queryset = Bid.objects.all()
+    serializer_class = BidSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
+
+    def update(self, request, *args, **kwargs):
+        bid = self.get_object()
+
+        # Check auction state
+        try:
+            auction = Auction.objects.get(id=bid.auction_id)
+        except Auction.DoesNotExist:
+            return Response({"detail": "Associated auction not found."},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        if not auction.is_open:
+            return Response({"detail": "Cannot edit bid. Auction is closed."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        bid = self.get_object()
+
+        # Check auction state
+        try:
+            auction = Auction.objects.get(id=bid.auction_id)
+        except Auction.DoesNotExist:
+            return Response({"detail": "Associated auction not found."},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        if not auction.is_open:
+            return Response({"detail": "Cannot delete bid. Auction is closed."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        return super().destroy(request, *args, **kwargs)
