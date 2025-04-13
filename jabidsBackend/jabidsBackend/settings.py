@@ -1,5 +1,7 @@
 from pathlib import Path
 from typing import List, Dict
+import os, dj_database_url
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR: Path = Path(__file__).resolve().parent.parent
@@ -13,7 +15,7 @@ SECRET_KEY: str = 'django-insecure-z=n$axtvlrgnjiwmsh*9)ez$v&bjrw$d@bea)h&p)x!6m
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG: bool = True
 
-ALLOWED_HOSTS: List[str] = ['localhost', '127.0.0.1', '0.0.0.0'] # , "@dpg-cvsj0s9r0fns73ca3830-a.oregon-postgres.render.com"
+ALLOWED_HOSTS: List[str] = ['localhost', '127.0.0.1', '0.0.0.0', "@dpg-cvu24ap5pdvs73e3l6d0-a.frankfurt-postgres.render.com"]
 
 
 # Application definition
@@ -73,11 +75,11 @@ WSGI_APPLICATION: str = 'jabidsBackend.wsgi.application'
 #     'default': dj_database_url.config(default=os.getenv("DATABASE_URL")) 
 # } 
 
+load_dotenv()
 DATABASES: Dict[str, Dict[str, str]] = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': str(BASE_DIR / 'db.sqlite3'),
-    }
+    'default': dj_database_url.config(
+        default=os.getenv("DATABASE_URL")
+    )
 }
 
 

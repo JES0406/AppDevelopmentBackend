@@ -94,7 +94,6 @@ class AuctionDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class CategoryListView(generics.ListCreateAPIView):
-    permission_classes = [IsAuthenticated]
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
