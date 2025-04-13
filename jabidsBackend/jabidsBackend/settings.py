@@ -13,7 +13,7 @@ SECRET_KEY: str = 'django-insecure-z=n$axtvlrgnjiwmsh*9)ez$v&bjrw$d@bea)h&p)x!6m
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG: bool = True
 
-ALLOWED_HOSTS: List[str] = []
+ALLOWED_HOSTS: List[str] = ['localhost', '127.0.0.1', '0.0.0.0'] # , "@dpg-cvsj0s9r0fns73ca3830-a.oregon-postgres.render.com"
 
 
 # Application definition
@@ -24,12 +24,17 @@ INSTALLED_APPS: List[str] = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework_simplejwt', 
+    'rest_framework_simplejwt.token_blacklist', 
+    'corsheaders',
     'rest_framework',
+    'drf_spectacular',
     'auctions',
     'users',
 ]
 
 MIDDLEWARE: List[str] = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -63,6 +68,11 @@ WSGI_APPLICATION: str = 'jabidsBackend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# load_dotenv() 
+# DATABASES = { 
+#     'default': dj_database_url.config(default=os.getenv("DATABASE_URL")) 
+# } 
+
 DATABASES: Dict[str, Dict[str, str]] = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -95,7 +105,7 @@ AUTH_PASSWORD_VALIDATORS: List[Dict[str, str]] = [
 
 LANGUAGE_CODE: str = 'en-us'
 
-TIME_ZONE: str = 'UTC'
+TIME_ZONE = 'Europe/Madrid'
 
 USE_I18N: bool = True
 
@@ -111,3 +121,30 @@ STATIC_URL: str = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD: str = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK = { 
+    'DEFAULT_PAGINATION_CLASS':'rest_framework.pagination.PageNumberPagination', 
+    'PAGE_SIZE': 5, 
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema', 
+    'DEFAULT_AUTHENTICATION_CLASSES': ( 
+        'rest_framework_simplejwt.authentication.JWTAuthentication', 
+    ), 
+}
+
+SPECTACULAR_SETTINGS = { 
+    'TITLE': 'API Auctions', 
+    'DESCRIPTION': 'Auctios web', 
+    'VERSION': '1.0.0', 
+    'SERVE_INCLUDE_SCHEMA': False, 
+} 
+
+CORS_ALLOW_ALL_ORIGINS = True 
+CORS_ALLOW_CREDENTIALS = True 
+
+from datetime import timedelta 
+SIMPLE_JWT = { 
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=1), 
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7), 
+    "ROTATE_REFRESH_TOKENS": True, 
+    "BLACKLIST_AFTER_ROTATION": True,  
+} 
