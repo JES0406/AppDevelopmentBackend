@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: django-api-auctions
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn myFirstApiRest.wsgi:application
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: myFirstApiRest.settings
+      - key: PYTHON_VERSION
+        value: 3.11
