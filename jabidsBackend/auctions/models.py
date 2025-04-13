@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
-from users.models import User
+from users.models import CustomUser
 from typing import Optional
 
 
@@ -35,8 +35,8 @@ class Auction(models.Model):
         Category, on_delete=models.CASCADE, related_name='auctions'
     )
     brand: str = models.CharField(max_length=100)
-    creator: User = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='auctions'
+    creator: CustomUser = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name='auctions'
     )
 
     @property
